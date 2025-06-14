@@ -1,0 +1,70 @@
+[
+  {
+    "from": "F",
+    "to": "K"
+  },
+  {
+    "from": "F",
+    "to": "J"
+  },
+  {
+    "from": "H",
+    "to": "Field"
+  },
+  {
+    "from": "J",
+    "to": "H"
+  },
+  {
+    "from": "H",
+    "to": "D"
+  },
+  {
+    "from": "C2",
+    "to": "C1"
+  },
+  {
+    "from": "C1",
+    "to": "C-D"
+  },
+  {
+    "from": "C-D",
+    "to": "D"
+  },
+  {
+    "from": "C1",
+    "to": "C"
+  },
+  {
+    "from": "K",
+    "to": "A"
+  },
+  {
+    "from": "J",
+    "to": "A"
+  },
+  {
+    "from": "H2",
+    "to": "H"
+  },
+  {
+    "from": "Auditorium",
+    "to": "A1"
+  },
+  {
+    "from": "Auditorium",
+    "to": "G1"
+  },
+  {
+    "from": "K",
+    "to": "Field"
+  },
+  {
+    "from": "Field",
+    "to": "A1"
+  },
+  {
+    "from": "Auditorium",
+    "to": "K"
+  }
+]

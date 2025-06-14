@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>VinUni Routing System</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <style>
+    body { margin: 0; font-family: sans-serif; }
+    #map { height: 90vh; }
+    #controls { padding: 10px; background: #f2f2f2; display: flex; gap: 10px; align-items: center; }
+    select, input, button { padding: 5px; }
+  </style>
+</head>
+<body>
+<div id="controls">
+  Start: <input id="start" list="location-list">
+  End: <input id="end" list="location-list">
+  <button onclick="drawRoute()">Start</button>
+</div>
+<datalist id="location-list"></datalist>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-routing-machine"></script>
+<script>
+const map = L.map('map').setView([21.0030, 105.9445], 18);
+let locations = {};
+let routeControl = null;
+let fixedLineControl = null;
+let manualLines = [];
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 20,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+let fixedEdges = [];
+
+fetch('vinuni_locations.json')
+  .then(res => res.json())
+  .then(data => {
+    locations = data;
+    const list = document.getElementById('location-list');
+    for (let id in data) {
+      L.marker([data[id].lat, data[id].lng]).addTo(map).bindPopup(`<b>${data[id].name}</b>`);
+      const opt = document.createElement('option');
+      opt.value = id;
+      list.appendChild(opt);
+    }
+    loadFixedEdges();
+  });
+
+function loadFixedEdges() {
+  fetch('campus_edges.json')
+    .then(res => res.json())
+    .then(edges => {
+      fixedEdges = edges;
+    });
+}
+
+function isFixedEdge(from, to) {
+  return fixedEdges.some(e => (e.from === from && e.to === to) || (e.from === to && e.to === from));
+}
+
+function drawRoute() {
+  const start = document.getElementById('start').value.trim();
+  const end = document.getElementById('end').value.trim();
+  if (!locations[start] || !locations[end]) return alert("Invalid location");
+
+  if (routeControl) { map.removeControl(routeControl); routeControl = null; }
+  if (fixedLineControl) { map.removeControl(fixedLineControl); fixedLineControl = null; }
+  manualLines.forEach(l => map.removeLayer(l));
+  manualLines = [];
+
+  if (isFixedEdge(start, end)) {
+    const from = locations[start], to = locations[end];
+    fixedLineControl = L.Routing.control({
+      waypoints: [L.latLng(from.lat, from.lng), L.latLng(to.lat, to.lng)],
+      lineOptions: { styles: [{ color: 'red', weight: 5 }] },
+      router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
+      createMarker: () => null,
+      addWaypoints: false,
+      routeWhileDragging: false
+    }).addTo(map);
+  } else {
+    fetch('/save-input', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ start, end })
+    })
+    .then(res => res.json())
+    .then(data => {
+      const route = data.route;
+      if (!route || route.length < 2) return alert("No route found");
+      for (let i = 0; i < route.length - 1; i++) {
+        const f = locations[route[i]];
+        const t = locations[route[i + 1]];
+        const line = L.polyline([[f.lat, f.lng], [t.lat, t.lng]], {
+          color: 'blue', weight: 4
+        }).addTo(map);
+        manualLines.push(line);
+      }
+    });
+  }
+}
+</script>
+</body>
+</html>

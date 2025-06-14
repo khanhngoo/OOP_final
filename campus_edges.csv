@@ -1,0 +1,12 @@
+from,to,distance
+I,I-A,10
+I-A,A,15
+Square,F1,25
+F1,E1,18
+A1,A,12
+G1,G,15
+H2,H,14
+Auditorium,A1,20
+Auditorium,G1,30
+Auditorium,K,19
+K,Field,35
